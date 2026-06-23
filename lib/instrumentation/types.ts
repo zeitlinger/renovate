@@ -4,7 +4,7 @@ import type { RenovateSplit } from '../config/types.ts';
 import type { BunyanRecord } from '../logger/types.ts';
 import type { PackageFile } from '../modules/manager/types.ts';
 import type { BranchCache } from '../util/cache/repository/types.ts';
-import type { GitOperationType } from '../util/git/types.ts';
+import type { FileChange, GitOperationType } from '../util/git/types.ts';
 
 export type RenovateSpanOptions = {
   attributes?: RenovateSpanAttributes;
@@ -54,6 +54,18 @@ interface RepoReport {
   branches: Partial<BranchCache>[];
   packageFiles: Record<string, PackageFile[]>;
   libYearsWithStatus?: LibYearsWithStatus;
+  /**
+   * Computed file changes per branch. Only populated when the
+   * `reportIncludeFileChanges` option is enabled. Useful with `dryRun=full`
+   * to inspect what Renovate would write without committing.
+   */
+  branchFileChanges?: BranchFileChanges[];
+}
+
+export interface BranchFileChanges {
+  branchName: string;
+  updatedPackageFiles: FileChange[];
+  updatedArtifacts: FileChange[];
 }
 
 export interface LibYearsWithStatus {

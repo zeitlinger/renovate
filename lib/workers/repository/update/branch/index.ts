@@ -18,6 +18,7 @@ import {
   TEMPORARY_ERROR,
   WORKER_FILE_UPDATE_FAILED,
 } from '../../../../constants/error-messages.ts';
+import { addBranchFileChanges } from '../../../../instrumentation/reporting.ts';
 import { logger, removeMeta } from '../../../../logger/index.ts';
 import { getAdditionalFiles } from '../../../../modules/manager/npm/post-update/index.ts';
 import {
@@ -668,6 +669,15 @@ export async function processBranch(
 
       // modifies the file changes in place to allow having a version bump in a packageFile or artifact
       await bumpVersions(config);
+
+      // Record computed file changes in the report. No-op unless
+      // `reportIncludeFileChanges` is enabled. Done here so the data flows
+      // into the report even when commit/push is skipped (e.g. `dryRun=full`).
+      addBranchFileChanges(config, {
+        branchName: config.branchName,
+        updatedPackageFiles: config.updatedPackageFiles,
+        updatedArtifacts: config.updatedArtifacts,
+      });
 
       removeMeta(['dep']);
 

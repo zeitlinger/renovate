@@ -6,6 +6,7 @@ import { prettier } from '../expose.ts';
 import { getProblems, logger } from '../logger/index.ts';
 import type { BranchCache } from '../util/cache/repository/types.ts';
 import { writeSystemFile } from '../util/fs/index.ts';
+import type { FileChange } from '../util/git/types.ts';
 import { getS3Client, parseS3Url } from '../util/s3.ts';
 import type { ExtractResult } from '../workers/repository/process/extract-update.ts';
 import type { LibYearsWithStatus, Report } from './types.ts';
@@ -47,6 +48,36 @@ export function addExtractionStats(
   coerceRepo(config.repository!);
   report.repositories[config.repository!].packageFiles =
     extractResult.packageFiles;
+}
+
+export interface BranchFileChangesInput {
+  branchName?: string;
+  updatedPackageFiles?: FileChange[];
+  updatedArtifacts?: FileChange[];
+}
+
+export function addBranchFileChanges(
+  config: RenovateConfig,
+  branch: BranchFileChangesInput,
+): void {
+  if (isNullOrUndefined(config.reportType)) {
+    return;
+  }
+  if (!config.reportIncludeFileChanges) {
+    return;
+  }
+  if (!branch.branchName) {
+    return;
+  }
+
+  coerceRepo(config.repository!);
+  const repo = report.repositories[config.repository!];
+  repo.branchFileChanges ??= [];
+  repo.branchFileChanges.push({
+    branchName: branch.branchName,
+    updatedPackageFiles: branch.updatedPackageFiles ?? [],
+    updatedArtifacts: branch.updatedArtifacts ?? [],
+  });
 }
 
 export function addLibYears(

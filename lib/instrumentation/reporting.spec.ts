@@ -6,6 +6,7 @@ import type { RenovateConfig } from '../config/types.ts';
 import type { PackageFile } from '../modules/manager/types.ts';
 import type { BranchCache } from '../util/cache/repository/types.ts';
 import {
+  addBranchFileChanges,
   addBranchStats,
   addExtractionStats,
   addLibYears,
@@ -266,6 +267,77 @@ describe('instrumentation/reporting', () => {
     finalizeReport();
 
     expect(getReport()).toEqual(expectedReport);
+  });
+
+  it('records branch file changes when reportIncludeFileChanges is enabled', () => {
+    const config: RenovateConfig = {
+      repository: 'myOrg/myRepo',
+      reportType: 'logging',
+      reportIncludeFileChanges: true,
+    };
+
+    addBranchStats(config, branchInformation);
+    addExtractionStats(config, { branchList: [], branches: [], packageFiles });
+    addBranchFileChanges(config, {
+      branchName: 'a-branch-name',
+      updatedPackageFiles: [
+        { type: 'addition', path: 'package.json', contents: '{"a":1}' },
+      ],
+      updatedArtifacts: [
+        {
+          type: 'addition',
+          path: 'package-lock.json',
+          contents: '{"lockfileVersion":3}',
+        },
+      ],
+    });
+
+    expect(getReport()).toEqual({
+      problems: [],
+      repositories: {
+        'myOrg/myRepo': {
+          problems: [],
+          branches: branchInformation,
+          packageFiles,
+          branchFileChanges: [
+            {
+              branchName: 'a-branch-name',
+              updatedPackageFiles: [
+                { type: 'addition', path: 'package.json', contents: '{"a":1}' },
+              ],
+              updatedArtifacts: [
+                {
+                  type: 'addition',
+                  path: 'package-lock.json',
+                  contents: '{"lockfileVersion":3}',
+                },
+              ],
+            },
+          ],
+        },
+      },
+    });
+  });
+
+  it('skips branch file changes when reportIncludeFileChanges is disabled', () => {
+    const config: RenovateConfig = {
+      repository: 'myOrg/myRepo',
+      reportType: 'logging',
+    };
+
+    addBranchStats(config, branchInformation);
+    addBranchFileChanges(config, {
+      branchName: 'a-branch-name',
+      updatedPackageFiles: [
+        { type: 'addition', path: 'package.json', contents: '{}' },
+      ],
+      updatedArtifacts: [],
+    });
+
+    const report = getReport();
+    expect(
+      report.repositories['myOrg/myRepo'].branchFileChanges,
+    ).toBeUndefined();
   });
 
   it('should handle libyears addition', () => {

@@ -537,6 +537,15 @@ const options: Readonly<RenovateOptions>[] = [
     cli: false,
   },
   {
+    name: 'reportIncludeFileChanges',
+    description:
+      'If set to `true`, the report includes the computed file changes (updated package files and artifacts) for each branch. Useful with `dryRun=full` to inspect what Renovate would write without committing.',
+    globalOnly: true,
+    type: 'boolean',
+    default: false,
+    experimental: true,
+  },
+  {
     name: 'force',
     description:
       'Any configuration set in this object will force override existing settings.',

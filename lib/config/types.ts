@@ -380,6 +380,7 @@ export interface RenovateConfig
   s3Endpoint?: string;
   s3PathStyle?: boolean;
   reportFormatting?: boolean;
+  reportIncludeFileChanges?: boolean;
   reportPath?: string;
   reportType?: 'logging' | 'file' | 's3' | null;
   depName?: string;
