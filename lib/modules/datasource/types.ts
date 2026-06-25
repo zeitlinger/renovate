@@ -90,6 +90,12 @@ export interface Release {
   currentAge?: string;
   isLatest?: boolean;
   attestation?: boolean;
+  /**
+   * Username/identifier of the entity that published this release to the
+   * upstream registry (e.g. npm `_npmUser.name`). Datasources may populate
+   * this when the registry exposes per-release publisher information.
+   */
+  registryOwner?: string;
 }
 
 export interface ReleaseTags {

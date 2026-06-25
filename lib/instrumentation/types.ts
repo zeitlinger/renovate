@@ -60,12 +60,30 @@ interface RepoReport {
    * to inspect what Renovate would write without committing.
    */
   branchFileChanges?: BranchFileChanges[];
+  /**
+   * Upstream registry publishers per dependency upgrade. Only populated
+   * when the `reportIncludePublishers` option is enabled.
+   */
+  branchPublishers?: BranchPublishers[];
 }
 
 export interface BranchFileChanges {
   branchName: string;
   updatedPackageFiles: FileChange[];
   updatedArtifacts: FileChange[];
+}
+
+export interface BranchPublisher {
+  depName?: string;
+  packageName?: string;
+  datasource?: string;
+  newVersion?: string;
+  registryOwner?: string;
+}
+
+export interface BranchPublishers {
+  branchName: string;
+  publishers: BranchPublisher[];
 }
 
 export interface LibYearsWithStatus {

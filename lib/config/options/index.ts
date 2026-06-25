@@ -546,6 +546,15 @@ const options: Readonly<RenovateOptions>[] = [
     experimental: true,
   },
   {
+    name: 'reportIncludePublishers',
+    description:
+      'If set to `true`, the report includes the upstream registry publisher (e.g. npm `_npmUser.name`) for each dependency upgrade in a branch. Useful for supply-chain auditing of dry-run results.',
+    globalOnly: true,
+    type: 'boolean',
+    default: false,
+    experimental: true,
+  },
+  {
     name: 'force',
     description:
       'Any configuration set in this object will force override existing settings.',

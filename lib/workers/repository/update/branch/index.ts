@@ -18,7 +18,10 @@ import {
   TEMPORARY_ERROR,
   WORKER_FILE_UPDATE_FAILED,
 } from '../../../../constants/error-messages.ts';
-import { addBranchFileChanges } from '../../../../instrumentation/reporting.ts';
+import {
+  addBranchFileChanges,
+  addBranchPublishers,
+} from '../../../../instrumentation/reporting.ts';
 import { logger, removeMeta } from '../../../../logger/index.ts';
 import { getAdditionalFiles } from '../../../../modules/manager/npm/post-update/index.ts';
 import {
@@ -677,6 +680,15 @@ export async function processBranch(
         branchName: config.branchName,
         updatedPackageFiles: config.updatedPackageFiles,
         updatedArtifacts: config.updatedArtifacts,
+      });
+
+      // Record per-dependency registry publishers in the report. No-op unless
+      // `reportIncludePublishers` is enabled. Like the file-changes hook above,
+      // this runs before the commit/push phase so the data flows into the
+      // report even with `dryRun=full`.
+      addBranchPublishers(config, {
+        branchName: config.branchName,
+        upgrades: config.upgrades,
       });
 
       removeMeta(['dep']);

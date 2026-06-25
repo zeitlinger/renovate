@@ -22,6 +22,10 @@ const Distribution = z.object({
   attestations: Attestations.optional(),
 });
 
+const NpmUser = z.object({
+  name: z.string().optional(),
+});
+
 export const NpmResponseVersion = z.object({
   repository: RepositoryNpmResponse.optional(),
   homepage: z.string().optional().catch(undefined),
@@ -34,6 +38,7 @@ export const NpmResponseVersion = z.object({
     .optional()
     .catch(undefined),
   dist: Distribution.optional(),
+  _npmUser: NpmUser.optional().catch(undefined),
 });
 export type NpmResponseVersion = z.infer<typeof NpmResponseVersion>;
 

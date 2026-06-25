@@ -141,6 +141,10 @@ export async function getDependency(
         devDependencies: res.versions?.[version].devDependencies,
         attestation: isString(res.versions?.[version].dist?.attestations?.url),
       };
+      const npmUserName = res.versions?.[version]._npmUser?.name;
+      if (isNonEmptyString(npmUserName)) {
+        release.registryOwner = npmUserName;
+      }
       const releaseTimestamp = asTimestamp(res.time?.[version]);
       if (releaseTimestamp) {
         release.releaseTimestamp = releaseTimestamp;

@@ -80,6 +80,59 @@ export function addBranchFileChanges(
   });
 }
 
+export interface BranchPublishersInput {
+  branchName?: string;
+  upgrades?: {
+    depName?: string;
+    packageName?: string;
+    datasource?: string;
+    newVersion?: string;
+    releases?: { version: string; registryOwner?: string }[];
+  }[];
+}
+
+export function addBranchPublishers(
+  config: RenovateConfig,
+  branch: BranchPublishersInput,
+): void {
+  if (isNullOrUndefined(config.reportType)) {
+    return;
+  }
+  if (!config.reportIncludePublishers) {
+    return;
+  }
+  if (!branch.branchName) {
+    return;
+  }
+
+  const publishers = (branch.upgrades ?? [])
+    .map((upgrade) => {
+      const release = upgrade.releases?.find(
+        (r) => r.version === upgrade.newVersion,
+      );
+      return {
+        depName: upgrade.depName,
+        packageName: upgrade.packageName,
+        datasource: upgrade.datasource,
+        newVersion: upgrade.newVersion,
+        registryOwner: release?.registryOwner,
+      };
+    })
+    .filter((p) => p.registryOwner !== undefined);
+
+  if (!publishers.length) {
+    return;
+  }
+
+  coerceRepo(config.repository!);
+  const repo = report.repositories[config.repository!];
+  repo.branchPublishers ??= [];
+  repo.branchPublishers.push({
+    branchName: branch.branchName,
+    publishers,
+  });
+}
+
 export function addLibYears(
   config: RenovateConfig,
   libYearsWithDepCount: LibYearsWithStatus,

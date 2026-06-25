@@ -592,6 +592,38 @@ describe('modules/datasource/npm/get', () => {
     `);
   });
 
+  it('extracts registryOwner from _npmUser', async () => {
+    httpMock
+      .scope('https://example.com')
+      .get('/some-package')
+      .reply(200, {
+        name: 'some-package',
+        'dist-tags': { latest: '2.0.0' },
+        versions: {
+          '1.0.0': {
+            _npmUser: { name: 'alice', email: 'alice@example.com' },
+          },
+          '2.0.0': {
+            _npmUser: { name: 'bob', email: 'bob@example.com' },
+          },
+          '3.0.0-no-publisher': {},
+        },
+      });
+
+    const dep = await getDependency(
+      http,
+      'https://example.com',
+      'some-package',
+    );
+
+    expect(dep?.releases).toEqual([
+      expect.objectContaining({ version: '1.0.0', registryOwner: 'alice' }),
+      expect.objectContaining({ version: '2.0.0', registryOwner: 'bob' }),
+      expect.objectContaining({ version: '3.0.0-no-publisher' }),
+    ]);
+    expect(dep?.releases[2].registryOwner).toBeUndefined();
+  });
+
   describe('cache', () => {
     const httpResponse: HttpResponse<unknown> = {
       statusCode: 200,

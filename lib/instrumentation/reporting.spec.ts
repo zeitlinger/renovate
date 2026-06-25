@@ -7,6 +7,7 @@ import type { PackageFile } from '../modules/manager/types.ts';
 import type { BranchCache } from '../util/cache/repository/types.ts';
 import {
   addBranchFileChanges,
+  addBranchPublishers,
   addBranchStats,
   addExtractionStats,
   addLibYears,
@@ -337,6 +338,79 @@ describe('instrumentation/reporting', () => {
     const report = getReport();
     expect(
       report.repositories['myOrg/myRepo'].branchFileChanges,
+    ).toBeUndefined();
+  });
+
+  it('records branch publishers when reportIncludePublishers is enabled', () => {
+    const config: RenovateConfig = {
+      repository: 'myOrg/myRepo',
+      reportType: 'logging',
+      reportIncludePublishers: true,
+    };
+
+    addBranchStats(config, branchInformation);
+    addExtractionStats(config, { branchList: [], branches: [], packageFiles });
+    addBranchPublishers(config, {
+      branchName: 'a-branch-name',
+      upgrades: [
+        {
+          depName: 'left-pad',
+          packageName: 'left-pad',
+          datasource: 'npm',
+          newVersion: '1.3.0',
+          releases: [
+            { version: '1.2.0', registryOwner: 'old-owner' },
+            { version: '1.3.0', registryOwner: 'new-owner' },
+          ],
+        },
+        {
+          // No releases / no registryOwner — filtered out
+          depName: 'unowned-pkg',
+          packageName: 'unowned-pkg',
+          datasource: 'npm',
+          newVersion: '0.0.1',
+          releases: [{ version: '0.0.1' }],
+        },
+      ],
+    });
+
+    const repo = getReport().repositories['myOrg/myRepo'];
+    expect(repo.branchPublishers).toEqual([
+      {
+        branchName: 'a-branch-name',
+        publishers: [
+          {
+            depName: 'left-pad',
+            packageName: 'left-pad',
+            datasource: 'npm',
+            newVersion: '1.3.0',
+            registryOwner: 'new-owner',
+          },
+        ],
+      },
+    ]);
+  });
+
+  it('skips branch publishers when reportIncludePublishers is disabled', () => {
+    const config: RenovateConfig = {
+      repository: 'myOrg/myRepo',
+      reportType: 'logging',
+    };
+
+    addBranchStats(config, branchInformation);
+    addBranchPublishers(config, {
+      branchName: 'a-branch-name',
+      upgrades: [
+        {
+          depName: 'left-pad',
+          newVersion: '1.3.0',
+          releases: [{ version: '1.3.0', registryOwner: 'new-owner' }],
+        },
+      ],
+    });
+
+    expect(
+      getReport().repositories['myOrg/myRepo'].branchPublishers,
     ).toBeUndefined();
   });
 

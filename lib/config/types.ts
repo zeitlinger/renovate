@@ -381,6 +381,7 @@ export interface RenovateConfig
   s3PathStyle?: boolean;
   reportFormatting?: boolean;
   reportIncludeFileChanges?: boolean;
+  reportIncludePublishers?: boolean;
   reportPath?: string;
   reportType?: 'logging' | 'file' | 's3' | null;
   depName?: string;
