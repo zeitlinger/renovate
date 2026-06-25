@@ -131,6 +131,7 @@ export interface LookupUpdate {
   releaseTimestamp?: Timestamp;
   newVersionAgeInDays?: number;
   registryUrl?: string;
+  registryOwner?: string;
   libYears?: number;
 
   version?: string;

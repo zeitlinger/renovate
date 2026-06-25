@@ -107,15 +107,16 @@ export function addBranchPublishers(
 
   const publishers = (branch.upgrades ?? [])
     .map((upgrade) => {
-      const release = upgrade.releases?.find(
-        (r) => r.version === upgrade.newVersion,
-      );
+      // generateUpdate (process/lookup/generate.ts) copies
+      // release.registryOwner onto the upgrade. By the time processBranch
+      // runs, upgrade.releases is already cleared, so reading from upgrade
+      // directly is the only path.
       return {
         depName: upgrade.depName,
         packageName: upgrade.packageName,
         datasource: upgrade.datasource,
         newVersion: upgrade.newVersion,
-        registryOwner: release?.registryOwner,
+        registryOwner: upgrade.registryOwner,
       };
     })
     .filter((p) => p.registryOwner !== undefined);

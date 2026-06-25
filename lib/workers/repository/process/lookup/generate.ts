@@ -53,6 +53,10 @@ export async function generateUpdate(
      */
     update.registryUrl = release.registryUrl;
   }
+  // istanbul ignore if
+  if (release.registryOwner !== undefined) {
+    update.registryOwner = release.registryOwner;
+  }
 
   if (currentValue) {
     try {
